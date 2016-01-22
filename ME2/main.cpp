@@ -185,7 +185,13 @@ DWORD WINAPI Start(LPVOID lpParam)
 	{
 		fprintf(Log, "Console patch: failed\n");	
 	}
-	DWORD patch1 = FindPattern(0x401000, 0xE52000, pattern, "xxxxxxxxxxxxxxxxxxxxx",0);
+	DWORD patch1;
+	int count = 0;
+	while((patch1 = FindPattern(0x401000, 0xE52000, pattern, "xxxxxxxxxxxxxxxxxxxxx",0))==0 && count++ < 10)
+	{
+		fprintf(Log, "DLC check - searching...\n");
+		Sleep(300);
+	}
 	if(patch1)
 	{
 		fprintf(Log, "DLC check - position: 0x%x\n", patch1);
