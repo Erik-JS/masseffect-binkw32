@@ -1,0 +1,6 @@
+*.opensdf
+*.sdf
+*.pdb
+*.lib
+*.exp
+*.suo
