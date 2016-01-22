@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "binkw32", "binkw32.vcxproj", "{0A9ED813-624C-49D1-BBA6-30E55C9931AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A9ED813-624C-49D1-BBA6-30E55C9931AF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0A9ED813-624C-49D1-BBA6-30E55C9931AF}.Debug|Win32.Build.0 = Debug|Win32
+		{0A9ED813-624C-49D1-BBA6-30E55C9931AF}.Release|Win32.ActiveCfg = Release|Win32
+		{0A9ED813-624C-49D1-BBA6-30E55C9931AF}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
