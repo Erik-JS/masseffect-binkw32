@@ -1,6 +1,6 @@
 # Binkw32 Autopatchers for Mass Effect 2 and 3
 
-*Original ME3 Autopatcher created by [Warranty Voider](https://github.com/zeroKilo)
+*Original ME3 Autopatcher created by [Warranty Voider](https://github.com/zeroKilo)*
 
 Features:
 - Enables in-engine console (default keys: TAB, Tilde);
