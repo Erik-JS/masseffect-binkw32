@@ -29,8 +29,7 @@ BYTE pattern3 [] = { 0xB8, 0xE4, 0xFF, 0xFF, 0xFF, 0x5B, 0x59, 0xC3 };
 
 // --- Load Plugins ---
 void loadPlugins (FILE* Log) {	
-	DWORD typeMask1 = 0x2061202e; // '. a '
-	DWORD typeMask2 = 0x20692073; // 's i '
+	DWORD typeMask = 0x6973612e; // '.asi'
 	WIN32_FIND_DATA fd;
 	HANDLE asiFile = FindFirstFile (".\\*.asi", &fd);
 	if (asiFile == INVALID_HANDLE_VALUE)
@@ -42,17 +41,15 @@ void loadPlugins (FILE* Log) {
 			int pos = 0;
 			while (fd.cFileName[pos])
 				pos++;
-			DWORD type1 = *(DWORD *)(fd.cFileName+pos-4);
-			DWORD type2 = *(DWORD *)(fd.cFileName+pos-2);
-			type1 |= 0x20202020; // convert letter to lowercase, "\0" to space
-			type2 |= 0x20202020;
+			DWORD type = *(DWORD *)(fd.cFileName+pos-4);
+			type |= 0x20202020; // convert letter to lowercase, "\0" to space
 
-			if (type1 == typeMask1 && type2 == typeMask2)
+			if (type == typeMask)
 			{
 				if (LoadLibrary (fd.cFileName)) 
-					fprintf (Log, "Plugin loaded: %ls\n", fd.cFileName);
+					fprintf (Log, "Plugin loaded: %s\n", fd.cFileName);
 				else
-					fprintf (Log, "Plugin error: %ls\n", fd.cFileName);
+					fprintf (Log, "Plugin error: %s\n", fd.cFileName);
 			}
 
 		}
@@ -171,7 +168,7 @@ DWORD WINAPI Start(LPVOID lpParam)
 {
 		FILE* Log;
 		fopen_s ( &Log, "binkw32log.txt", "w" );
-		fprintf(Log, "Autopatcher by Warranty Voider\n");
+		fprintf(Log, "ME3 Autopatcher by Warranty Voider\n");
 		fprintf(Log, "Enhancements by Erik JS\n");
 		GetAddresses();
 		if (hOriginalBink)
