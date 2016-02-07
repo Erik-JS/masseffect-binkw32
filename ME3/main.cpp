@@ -28,10 +28,15 @@ BYTE pattern2 [] = {
 BYTE pattern3 [] = { 0xB8, 0xE4, 0xFF, 0xFF, 0xFF, 0x5B, 0x59, 0xC3 };
 
 // --- Load Plugins ---
-void loadPlugins (FILE* Log) {	
+void loadPlugins (FILE *Log, char *folder)
+{
 	DWORD typeMask = 0x6973612e; // '.asi'
 	WIN32_FIND_DATA fd;
-	HANDLE asiFile = FindFirstFile (".\\*.asi", &fd);
+	char targetfilter[FILENAME_MAX];
+	char currfile[FILENAME_MAX];
+	strcpy_s (targetfilter, folder);
+	strcat_s (targetfilter, "\\*.asi");
+	HANDLE asiFile = FindFirstFile (targetfilter, &fd);
 	if (asiFile == INVALID_HANDLE_VALUE)
 		return;
 	do
@@ -43,15 +48,16 @@ void loadPlugins (FILE* Log) {
 				pos++;
 			DWORD type = *(DWORD *)(fd.cFileName+pos-4);
 			type |= 0x20202020; // convert letter to lowercase, "\0" to space
-
 			if (type == typeMask)
 			{
-				if (LoadLibrary (fd.cFileName)) 
-					fprintf (Log, "Plugin loaded: %s\n", fd.cFileName);
+				strcpy_s (currfile, folder);
+				strcat_s (currfile, "\\");
+				strcat_s (currfile, fd.cFileName);
+				if (LoadLibrary (currfile)) 
+					fprintf (Log, "Plugin loaded: %s\n", currfile);
 				else
-					fprintf (Log, "Plugin error: %s\n", fd.cFileName);
+					fprintf (Log, "Plugin error: %s\n", currfile);
 			}
-
 		}
 	} while (FindNextFile (asiFile, &fd));
 	FindClose (asiFile);
@@ -233,7 +239,8 @@ DWORD WINAPI Start(LPVOID lpParam)
 		{
 			fprintf(Log, "Patch position 3 (certcheck): byte pattern not found\n");
 		}
-		loadPlugins(Log);
+		loadPlugins(Log, ".");
+		loadPlugins(Log, "asi");
 		fclose(Log);
 		return 0;
 }
