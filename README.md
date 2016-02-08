@@ -12,7 +12,7 @@ Tested on: Mass Effect 2 (1.02; Steam and Origin), Mass Effect 3 (Demo and 1.5)
 -----------------------------------------------------------
 
 Includes ASI loader - original code by listener ([XLiveLess](http://gtaforums.com/topic/388658-relgtaiv-xliveless/))<br />
-The ASI loader allows for loading of DLL files without the need of a separate injector. These DLL files must be renamed to *.asi and put in the same folder of binkw32.dll or in a subfolder named "asi".
+The ASI loader allows for loading of DLL files without the need of a separate injector. These DLL files must be renamed to *.asi and put in the same folder of the game's executable or in a subfolder named "asi".
 
 -----------------------------------------------------------
 
