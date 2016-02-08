@@ -46,7 +46,8 @@ void loadPlugins (FILE *Log, char *folder)
 	WIN32_FIND_DATA fd;
 	char targetfilter[FILENAME_MAX];
 	char currfile[FILENAME_MAX];
-	char *exebasefolder = GetExecutableFolder();
+	char exebasefolder[FILENAME_MAX];
+	strcpy_s (exebasefolder, GetExecutableFolder());
 	strcpy_s (targetfilter, exebasefolder);
 	strcat_s (targetfilter, folder);
 	strcat_s (targetfilter, "\\*.asi");
