@@ -5,18 +5,17 @@
 
 HINSTANCE hOriginalBink = NULL;
 FARPROC p[71] = {0};
+char exeBaseFolder[FILENAME_MAX];
 BYTE pattern [] = { 0x59, 0x5F, 0x5E, 0x5D, 0x5B, 0x83, 0xC4, 0x48, 0xC2, 0x0C, 0x00, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC };
 
-// Returns current executable's path, including "\"
-char *GetExecutableFolder()
+// Sets exeBaseFolder to hold current executable's path, including "\"
+void SetExecutableFolder()
 {
-	char buffer[FILENAME_MAX];
-	GetModuleFileName (NULL, buffer, FILENAME_MAX);
-	int x = strlen(buffer) - 1;
-	while (buffer[x] != '\\')
+	GetModuleFileName (NULL, exeBaseFolder, FILENAME_MAX);
+	int x = strlen(exeBaseFolder) - 1;
+	while (exeBaseFolder[x] != '\\')
 		x--;
-	buffer[x + 1] = '\0';
-	return buffer;
+	exeBaseFolder[x + 1] = '\0';
 }
 
 // --- Load Plugins ---
@@ -26,9 +25,7 @@ void loadPlugins (FILE *Log, char *folder)
 	WIN32_FIND_DATA fd;
 	char targetfilter[FILENAME_MAX];
 	char currfile[FILENAME_MAX];
-	char exebasefolder[FILENAME_MAX];
-	strcpy_s (exebasefolder, GetExecutableFolder());
-	strcpy_s (targetfilter, exebasefolder);
+	strcpy_s (targetfilter, exeBaseFolder);
 	strcat_s (targetfilter, folder);
 	strcat_s (targetfilter, "\\*.asi");
 	HANDLE asiFile = FindFirstFile (targetfilter, &fd);
@@ -45,7 +42,7 @@ void loadPlugins (FILE *Log, char *folder)
 			type |= 0x20202020; // convert letter to lowercase, "\0" to space
 			if (type == typeMask)
 			{
-				strcpy_s (currfile, exebasefolder);
+				strcpy_s (currfile, exeBaseFolder);
 				strcat_s (currfile, folder);
 				strcat_s (currfile, "\\");
 				strcat_s (currfile, fd.cFileName);
@@ -232,6 +229,7 @@ DWORD WINAPI Start(LPVOID lpParam)
 	{
 		fprintf(Log, "DLC check - patch: byte pattern not found\n");
 	}
+	SetExecutableFolder();
 	loadPlugins(Log, ".");
 	loadPlugins(Log, "asi");
 	fclose (Log);

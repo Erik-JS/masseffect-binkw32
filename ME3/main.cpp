@@ -5,6 +5,7 @@
 
 HINSTANCE hOriginalBink = NULL;
 FARPROC p[72] = {0};
+char exeBaseFolder[FILENAME_MAX];
 BYTE pattern [] = {   0x8B, 0x11, 0x8B, 0x42, 0x0C,
                         0x57, 0x56, 0xFF, 0xD0, 
                         0x8B, 0xC3, // <-- move eax,ebx; offset 0x9; will be replaced with 0xB0 0x01 to get mov al,1;
@@ -27,16 +28,14 @@ BYTE pattern2 [] = {
 };
 BYTE pattern3 [] = { 0xB8, 0xE4, 0xFF, 0xFF, 0xFF, 0x5B, 0x59, 0xC3 };
 
-// Returns current executable's path, including "\"
-char *GetExecutableFolder()
+// Sets exeBaseFolder to hold current executable's path, including "\"
+void SetExecutableFolder()
 {
-	char buffer[FILENAME_MAX];
-	GetModuleFileName (NULL, buffer, FILENAME_MAX);
-	int x = strlen(buffer) - 1;
-	while (buffer[x] != '\\')
+	GetModuleFileName (NULL, exeBaseFolder, FILENAME_MAX);
+	int x = strlen(exeBaseFolder) - 1;
+	while (exeBaseFolder[x] != '\\')
 		x--;
-	buffer[x + 1] = '\0';
-	return buffer;
+	exeBaseFolder[x + 1] = '\0';
 }
 
 // --- Load Plugins ---
@@ -46,9 +45,7 @@ void loadPlugins (FILE *Log, char *folder)
 	WIN32_FIND_DATA fd;
 	char targetfilter[FILENAME_MAX];
 	char currfile[FILENAME_MAX];
-	char exebasefolder[FILENAME_MAX];
-	strcpy_s (exebasefolder, GetExecutableFolder());
-	strcpy_s (targetfilter, exebasefolder);
+	strcpy_s (targetfilter, exeBaseFolder);
 	strcat_s (targetfilter, folder);
 	strcat_s (targetfilter, "\\*.asi");
 	HANDLE asiFile = FindFirstFile (targetfilter, &fd);
@@ -65,7 +62,7 @@ void loadPlugins (FILE *Log, char *folder)
 			type |= 0x20202020; // convert letter to lowercase, "\0" to space
 			if (type == typeMask)
 			{
-				strcpy_s (currfile, exebasefolder);
+				strcpy_s (currfile, exeBaseFolder);
 				strcat_s (currfile, folder);
 				strcat_s (currfile, "\\");
 				strcat_s (currfile, fd.cFileName);
@@ -255,6 +252,7 @@ DWORD WINAPI Start(LPVOID lpParam)
 		{
 			fprintf(Log, "Patch position 3 (certcheck): byte pattern not found\n");
 		}
+		SetExecutableFolder();
 		loadPlugins(Log, ".");
 		loadPlugins(Log, "asi");
 		fclose(Log);
