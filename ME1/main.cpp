@@ -2,11 +2,25 @@
 #include "header.h"
 #include <windows.h>
 #include <stdio.h>
+#include <ShlObj.h>
 
 HINSTANCE hOriginalBink = NULL;
 FARPROC p[71] = {0};
 char exeBaseFolder[FILENAME_MAX];
+
 //BYTE pattern[] = { 0, 0, 0, 0 };
+
+FILE *Log = NULL;
+
+void logprintf(const char *format, ...)
+{
+	if (Log == NULL)
+		return;
+	va_list arglist;
+	va_start(arglist, format);
+	vfprintf(Log, format, arglist);
+	va_end(arglist);
+}
 
 // Sets exeBaseFolder to hold current executable's path, including "\"
 void SetExecutableFolder()
@@ -19,7 +33,7 @@ void SetExecutableFolder()
 }
 
 // --- Load Plugins ---
-void loadPlugins (FILE *Log, char *folder)
+void loadPlugins (char *folder)
 {
 	DWORD typeMask = 0x6973612e; // '.asi'
 	WIN32_FIND_DATA fd;
@@ -46,10 +60,10 @@ void loadPlugins (FILE *Log, char *folder)
 				strcat_s (currfile, folder);
 				strcat_s (currfile, "\\");
 				strcat_s (currfile, fd.cFileName);
-				if (LoadLibrary (currfile)) 
-					fprintf (Log, "Plugin loaded: %s\n", currfile);
+				if (LoadLibrary(currfile))
+					logprintf("Plugin loaded: %s\n", currfile);
 				else
-					fprintf (Log, "Plugin error: %s\n", currfile);
+					logprintf("Plugin error: %s\n", currfile);
 			}
 		}
 	} while (FindNextFile (asiFile, &fd));
@@ -83,7 +97,7 @@ void loadPlugins (FILE *Log, char *folder)
 	return StartAddress + i - 1;  
 }*/ 
 
-void GetAdresses()
+void GetAddresses()
 {
 	hOriginalBink = LoadLibrary("binkw23.dll");
 	if (hOriginalBink)
@@ -157,25 +171,40 @@ void GetAdresses()
 	}
 }
 
+void OpenLogFile()
+{
+	PWSTR docfolder;
+	char logfilepath[MAX_PATH];
+	if (SHGetKnownFolderPath(FOLDERID_Documents, 0, 0, &docfolder) == S_OK)
+	{
+		wcstombs_s(NULL, logfilepath, docfolder, MAX_PATH);
+		strcat_s(logfilepath, "\\binkw32-me1.log");
+		fopen_s(&Log, logfilepath, "w");
+		CoTaskMemFree(docfolder);
+		return;
+	}
+	fopen_s(&Log, "binkw32-me1.log", "w");
+}
+
 DWORD WINAPI Start(LPVOID lpParam)
 {
-	FILE* Log;
-	fopen_s ( &Log, "binkw32log.txt", "w" );
-	fprintf(Log, "ME1 ASI Loader by Erik JS\n");
-	GetAdresses();
+	OpenLogFile();
+	logprintf("ME1 ASI Loader by Erik JS\n");
+	GetAddresses();
 	if (hOriginalBink)
 	{
-		fprintf(Log, "Addresses loaded from binkw23.dll - OK\n");	
+		logprintf("Addresses loaded from binkw23.dll - OK\n");	
 	}
 	else
 	{
-		fprintf(Log, "Error loading binkw23.dll!\n");	
+		logprintf("Error loading binkw23.dll!\n");	
 		return 0;
 	}
 	SetExecutableFolder();
-	loadPlugins(Log, ".");
-	loadPlugins(Log, "asi");
-	fclose (Log);
+	loadPlugins(".");
+	loadPlugins("asi");
+	if (Log)
+		fclose(Log);
 	return 0;
 }
 

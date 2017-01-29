@@ -2,6 +2,7 @@
 #include "header.h"
 #include <windows.h>
 #include <stdio.h>
+#include <ShlObj.h>
 
 HINSTANCE hOriginalBink = NULL;
 FARPROC p[72] = {0};
@@ -27,6 +28,17 @@ BYTE pattern2 [] = {
 						0xCC, 0xCC, 0xCC, 0xCC, 0xCC
 };
 BYTE pattern3 [] = { 0xB8, 0xE4, 0xFF, 0xFF, 0xFF, 0x5B, 0x59, 0xC3 };
+FILE *Log = NULL;
+
+void logprintf(const char *format, ...)
+{
+	if (Log == NULL)
+		return;
+	va_list arglist;
+	va_start(arglist, format);
+	vfprintf(Log, format, arglist);
+	va_end(arglist);
+}
 
 // Sets exeBaseFolder to hold current executable's path, including "\"
 void SetExecutableFolder()
@@ -39,7 +51,7 @@ void SetExecutableFolder()
 }
 
 // --- Load Plugins ---
-void loadPlugins (FILE *Log, char *folder)
+void loadPlugins (char *folder)
 {
 	DWORD typeMask = 0x6973612e; // '.asi'
 	WIN32_FIND_DATA fd;
@@ -66,10 +78,10 @@ void loadPlugins (FILE *Log, char *folder)
 				strcat_s (currfile, folder);
 				strcat_s (currfile, "\\");
 				strcat_s (currfile, fd.cFileName);
-				if (LoadLibrary (currfile)) 
-					fprintf (Log, "Plugin loaded: %s\n", currfile);
+				if (LoadLibrary(currfile))
+					logprintf("Plugin loaded: %s\n", currfile);
 				else
-					fprintf (Log, "Plugin error: %s\n", currfile);
+					logprintf("Plugin error: %s\n", currfile);
 			}
 		}
 	} while (FindNextFile (asiFile, &fd));
@@ -183,20 +195,34 @@ void GetAddresses()
 		}
 }
 
+void OpenLogFile()
+{
+	PWSTR docfolder;
+	char logfilepath[MAX_PATH];
+	if (SHGetKnownFolderPath(FOLDERID_Documents, 0, 0, &docfolder) == S_OK)
+	{
+		wcstombs_s(NULL, logfilepath, docfolder, MAX_PATH);
+		strcat_s(logfilepath, "\\binkw32-me3.log");
+		fopen_s(&Log, logfilepath, "w");
+		CoTaskMemFree(docfolder);
+		return;
+	}
+	fopen_s(&Log, "binkw32-me3.log", "w");
+}
+
 DWORD WINAPI Start(LPVOID lpParam)
 {
-		FILE* Log;
-		fopen_s ( &Log, "binkw32log.txt", "w" );
-		fprintf(Log, "ME3 Autopatcher by Warranty Voider\n");
-		fprintf(Log, "Enhancements by Erik JS\n");
+		OpenLogFile();
+		logprintf("ME3 Autopatcher by Warranty Voider\n");
+		logprintf("Enhancements by Erik JS\n");
 		GetAddresses();
 		if (hOriginalBink)
 		{
-			fprintf(Log, "binkw23.dll - loaded\n");
+			logprintf("binkw23.dll - loaded\n");
 		}
 		else
 		{
-			fprintf(Log, "Error loading binkw23.dll!\n");
+			logprintf("Error loading binkw23.dll!\n");
 			return 0;
 		}
 		DWORD patch1, patch2, patch3;
@@ -209,11 +235,11 @@ DWORD WINAPI Start(LPVOID lpParam)
 			*p++ = 0xB0;
 			*p = 0x01;
 			VirtualProtect( (void*)(patch1 + 9), 0x2, dwProtect, &dwProtect );
-			fprintf(Log, "Patch position 1 (DLC): patched at 0x%x\n", patch1);
+			logprintf("Patch position 1 (DLC): patched at 0x%X\n", patch1);
 		}
 		else
 		{
-			fprintf(Log, "Patch position 1 (DLC): byte pattern not found\n");
+			logprintf("Patch position 1 (DLC): byte pattern not found\n");
 		}
 		patch2 = FindPattern(0x401000, 0xE52000, pattern2, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",0);
 		if(patch2)
@@ -230,13 +256,13 @@ DWORD WINAPI Start(LPVOID lpParam)
 			*p++ = 0;
 			*p = 0;
 			VirtualProtect( (void*)patch2, 0x16, dwProtect, &dwProtect );
-			fprintf(Log, "Patch position 2 (console): patched at 0x%x\n", patch2);
+			logprintf("Patch position 2 (console): patched at 0x%X\n", patch2);
 		}
 		else
 		{
-			fprintf(Log, "Patch position 2 (console): byte pattern not found\n");
+			logprintf("Patch position 2 (console): byte pattern not found\n");
 		}
-		patch3 = FindPattern(0x401000, 0xE52000, pattern3, "xxxxxxxx",0);
+		patch3 = FindPattern(0x401000, 0xE52000, pattern3, "xxxxxxxx", 0);
 		if(patch3)
 		{
 			VirtualProtect( (void*)patch3, 0x8, PAGE_READWRITE, &dwProtect );
@@ -246,19 +272,19 @@ DWORD WINAPI Start(LPVOID lpParam)
 			*p++ = 0;
 			*p = 0;
 			VirtualProtect( (void*)patch3, 0x8, dwProtect, &dwProtect );
-			fprintf(Log, "Patch position 3 (certcheck): patched at 0x%x\n", patch3);	
+			logprintf("Patch position 3 (certcheck): patched at 0x%X\n", patch3);	
 		}
 		else
 		{
-			fprintf(Log, "Patch position 3 (certcheck): byte pattern not found\n");
+			logprintf("Patch position 3 (certcheck): byte pattern not found\n");
 		}
 		SetExecutableFolder();
-		loadPlugins(Log, ".");
-		loadPlugins(Log, "asi");
-		fclose(Log);
+		loadPlugins(".");
+		loadPlugins("asi");
+		if(Log)
+			fclose(Log);
 		return 0;
 }
-
 
 BOOL WINAPI DllMain(HINSTANCE hInst,DWORD reason,LPVOID)
 {

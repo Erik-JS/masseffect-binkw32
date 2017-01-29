@@ -2,11 +2,23 @@
 #include "header.h"
 #include <windows.h>
 #include <stdio.h>
+#include <ShlObj.h>
 
 HINSTANCE hOriginalBink = NULL;
 FARPROC p[71] = {0};
 char exeBaseFolder[FILENAME_MAX];
 BYTE pattern [] = { 0x59, 0x5F, 0x5E, 0x5D, 0x5B, 0x83, 0xC4, 0x48, 0xC2, 0x0C, 0x00, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC };
+FILE *Log = NULL;
+
+void logprintf(const char *format, ...)
+{
+	if (Log == NULL)
+		return;
+	va_list arglist;
+	va_start(arglist, format);
+	vfprintf(Log, format, arglist);
+	va_end(arglist);
+}
 
 // Sets exeBaseFolder to hold current executable's path, including "\"
 void SetExecutableFolder()
@@ -19,7 +31,7 @@ void SetExecutableFolder()
 }
 
 // --- Load Plugins ---
-void loadPlugins (FILE *Log, char *folder)
+void loadPlugins (char *folder)
 {
 	DWORD typeMask = 0x6973612e; // '.asi'
 	WIN32_FIND_DATA fd;
@@ -46,10 +58,10 @@ void loadPlugins (FILE *Log, char *folder)
 				strcat_s (currfile, folder);
 				strcat_s (currfile, "\\");
 				strcat_s (currfile, fd.cFileName);
-				if (LoadLibrary (currfile)) 
-					fprintf (Log, "Plugin loaded: %s\n", currfile);
+				if (LoadLibrary(currfile))
+					logprintf("Plugin loaded: %s\n", currfile);
 				else
-					fprintf (Log, "Plugin error: %s\n", currfile);
+					logprintf("Plugin error: %s\n", currfile);
 			}
 		}
 	} while (FindNextFile (asiFile, &fd));
@@ -97,7 +109,7 @@ bool PatchME2Console()
 	return true;
 }
 
-void GetAdresses()
+void GetAddresses()
 {
 	hOriginalBink = LoadLibrary("binkw23.dll");
 	if (hOriginalBink)
@@ -177,40 +189,54 @@ void GetAdresses()
 	}
 }
 
+void OpenLogFile()
+{
+	PWSTR docfolder;
+	char logfilepath[MAX_PATH];
+	if (SHGetKnownFolderPath(FOLDERID_Documents, 0, 0, &docfolder) == S_OK)
+	{
+		wcstombs_s(NULL, logfilepath, docfolder, MAX_PATH);
+		strcat_s(logfilepath, "\\binkw32-me2.log");
+		fopen_s(&Log, logfilepath, "w");
+		CoTaskMemFree(docfolder);
+		return;
+	}
+	fopen_s(&Log, "binkw32-me2.log", "w");
+}
+
 DWORD WINAPI Start(LPVOID lpParam)
 {
-	FILE* Log;
-	fopen_s ( &Log, "binkw32log.txt", "w" );
-	fprintf(Log, "ME2 Autopatcher by Erik JS\n");
-	fprintf(Log, "Based on original code by Warranty Voider\n");
-	GetAdresses();
+	OpenLogFile();
+	logprintf("ME2 Autopatcher by Erik JS\n");
+	logprintf("Based on original code by Warranty Voider\n");
+	GetAddresses();
 	if (hOriginalBink)
 	{
-		fprintf(Log, "Addresses loaded from binkw23.dll - OK\n");	
+		logprintf("Addresses loaded from binkw23.dll - OK\n");	
 	}
 	else
 	{
-		fprintf(Log, "Error loading binkw23.dll!\n");	
+		logprintf("Error loading binkw23.dll!\n");	
 		return 0;
 	}
 	if (PatchME2Console())
 	{
-		fprintf(Log, "Console patch: done\n");	
+		logprintf("Console patch: done\n");	
 	}
 	else
 	{
-		fprintf(Log, "Console patch: failed\n");	
+		logprintf("Console patch: failed\n");	
 	}
 	DWORD patch1;
 	int count = 0;
 	while((patch1 = FindPattern(0x401000, 0xE52000, pattern, "xxxxxxxxxxxxxxxxxxxxx",0))==0 && count++ < 10)
 	{
-		fprintf(Log, "DLC check - searching...\n");
+		logprintf("DLC check - searching...\n");
 		Sleep(300);
 	}
 	if(patch1)
 	{
-		fprintf(Log, "DLC check - position: 0x%x\n", patch1);
+		logprintf("DLC check - position: 0x%X\n", patch1);
 		DWORD dwProtect;
 		VirtualProtect( (void*)(patch1 + 8), 0x8, PAGE_READWRITE, &dwProtect );
 		BYTE* p = (BYTE *)(patch1 + 8);
@@ -223,16 +249,17 @@ DWORD WINAPI Start(LPVOID lpParam)
 		*p++ = 0x0C;
 		*p = 0x00;
 		VirtualProtect( (void*)(patch1 + 9), 0x8, dwProtect, &dwProtect );
-		fprintf(Log, "DLC check - patch: done\n");
+		logprintf("DLC check - patch: done\n");
 	}
 	else
 	{
-		fprintf(Log, "DLC check - patch: byte pattern not found\n");
+		logprintf("DLC check - patch: byte pattern not found\n");
 	}
 	SetExecutableFolder();
-	loadPlugins(Log, ".");
-	loadPlugins(Log, "asi");
-	fclose (Log);
+	loadPlugins(".");
+	loadPlugins("asi");
+	if(Log)
+		fclose(Log);
 	return 0;
 }
 
