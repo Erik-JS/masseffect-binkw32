@@ -21,7 +21,9 @@ The ASI loader allows for loading of DLL files without the need of a separate in
 
 -----------------------------------------------------------
 
-**REQUIRED:** [Visual C++ 2012 runtimes](http://www.microsoft.com/en-us/download/details.aspx?id=30679)
+**REQUIRED:** [Visual C++ 2015 runtimes](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
+
+**DESIGNED FOR WINDOWS 7 OR LATER.**
 
 -----------------------------------------------------------
 
