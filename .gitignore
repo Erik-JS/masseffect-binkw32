@@ -4,3 +4,11 @@
 *.lib
 *.exp
 *.suo
+ipch/
+*.aps
+*.ncb
+*.opendb
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+.vs/
