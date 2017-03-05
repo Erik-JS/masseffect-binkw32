@@ -31,7 +31,7 @@ void SetExecutableFolder()
 }
 
 // --- Load Plugins ---
-void loadPlugins (char *folder)
+void loadPlugins (const char *folder)
 {
 	DWORD typeMask = 0x6973612e; // '.asi'
 	WIN32_FIND_DATA fd;
@@ -239,15 +239,15 @@ DWORD WINAPI Start(LPVOID lpParam)
 		logprintf("DLC check - position: 0x%X\n", patch1);
 		DWORD dwProtect;
 		VirtualProtect( (void*)(patch1 + 8), 0x8, PAGE_READWRITE, &dwProtect );
-		BYTE* p = (BYTE *)(patch1 + 8);
-		*p++ = 0xB8;
-		*p++ = 0x01;
-		*p++ = 0x00;
-		*p++ = 0x00;
-		*p++ = 0x00;
-		*p++ = 0xC2;
-		*p++ = 0x0C;
-		*p = 0x00;
+		BYTE *b = (BYTE*)(patch1 + 8);
+		*b++ = 0xB8;
+		*b++ = 0x01;
+		*b++ = 0x00;
+		*b++ = 0x00;
+		*b++ = 0x00;
+		*b++ = 0xC2;
+		*b++ = 0x0C;
+		*b = 0x00;
 		VirtualProtect( (void*)(patch1 + 9), 0x8, dwProtect, &dwProtect );
 		logprintf("DLC check - patch: done\n");
 	}

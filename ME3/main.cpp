@@ -51,7 +51,7 @@ void SetExecutableFolder()
 }
 
 // --- Load Plugins ---
-void loadPlugins (char *folder)
+void loadPlugins (const char *folder)
 {
 	DWORD typeMask = 0x6973612e; // '.asi'
 	WIN32_FIND_DATA fd;
@@ -227,13 +227,14 @@ DWORD WINAPI Start(LPVOID lpParam)
 		}
 		DWORD patch1, patch2, patch3;
 		DWORD dwProtect;
+		BYTE *b;
 		patch1 = FindPattern(0x401000, 0xE52000, pattern, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",0);
 		if(patch1)
 		{
 			VirtualProtect( (void*)(patch1 + 9), 0x2, PAGE_READWRITE, &dwProtect );
-			BYTE* p = (BYTE *)(patch1 + 9);
-			*p++ = 0xB0;
-			*p = 0x01;
+			b = (BYTE*)(patch1 + 9);
+			*b++ = 0xB0;
+			*b = 0x01;
 			VirtualProtect( (void*)(patch1 + 9), 0x2, dwProtect, &dwProtect );
 			logprintf("Patch position 1 (DLC): patched at 0x%X\n", patch1);
 		}
@@ -245,16 +246,16 @@ DWORD WINAPI Start(LPVOID lpParam)
 		if(patch2)
 		{
 			VirtualProtect( (void*)patch2, 0x16, PAGE_READWRITE, &dwProtect );
-			BYTE* p = (BYTE *)(patch2 + 5);
-			*p++ = 0;
-			*p++ = 0;
-			*p++ = 0;
-			*p = 0;
-			p = (BYTE *)(patch2 + 0x12);
-			*p++ = 0;
-			*p++ = 0;
-			*p++ = 0;
-			*p = 0;
+			b = (BYTE*)(patch2 + 5);
+			*b++ = 0;
+			*b++ = 0;
+			*b++ = 0;
+			*b = 0;
+			b = (BYTE*)(patch2 + 0x12);
+			*b++ = 0;
+			*b++ = 0;
+			*b++ = 0;
+			*b = 0;
 			VirtualProtect( (void*)patch2, 0x16, dwProtect, &dwProtect );
 			logprintf("Patch position 2 (console): patched at 0x%X\n", patch2);
 		}
@@ -266,11 +267,11 @@ DWORD WINAPI Start(LPVOID lpParam)
 		if(patch3)
 		{
 			VirtualProtect( (void*)patch3, 0x8, PAGE_READWRITE, &dwProtect );
-			BYTE* p = (BYTE *)(patch3 + 1);
-			*p++ = 0;
-			*p++ = 0;
-			*p++ = 0;
-			*p = 0;
+			b = (BYTE*)(patch3 + 1);
+			*b++ = 0;
+			*b++ = 0;
+			*b++ = 0;
+			*b = 0;
 			VirtualProtect( (void*)patch3, 0x8, dwProtect, &dwProtect );
 			logprintf("Patch position 3 (certcheck): patched at 0x%X\n", patch3);	
 		}
