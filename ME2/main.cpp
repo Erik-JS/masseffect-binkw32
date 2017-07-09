@@ -9,6 +9,7 @@ FARPROC p[71] = {0};
 char exeBaseFolder[FILENAME_MAX];
 BYTE pattern [] = { 0x59, 0x5F, 0x5E, 0x5D, 0x5B, 0x83, 0xC4, 0x48, 0xC2, 0x0C, 0x00, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC };
 FILE *Log = NULL;
+int ASIcount = 0;
 
 void logprintf(const char *format, ...)
 {
@@ -59,7 +60,10 @@ void loadPlugins (const char *folder)
 				strcat_s (currfile, "\\");
 				strcat_s (currfile, fd.cFileName);
 				if (LoadLibrary(currfile))
+				{
 					logprintf("Plugin loaded: %s\n", currfile);
+					ASIcount++;
+				}
 				else
 					logprintf("Plugin error: %s\n", currfile);
 			}
@@ -256,8 +260,9 @@ DWORD WINAPI Start(LPVOID lpParam)
 		logprintf("DLC check - patch: byte pattern not found\n");
 	}
 	SetExecutableFolder();
-	loadPlugins(".");
 	loadPlugins("asi");
+	if (!ASIcount)
+		loadPlugins(".");
 	if(Log)
 		fclose(Log);
 	return 0;

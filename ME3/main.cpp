@@ -29,6 +29,7 @@ BYTE pattern2 [] = {
 };
 BYTE pattern3 [] = { 0xB8, 0xE4, 0xFF, 0xFF, 0xFF, 0x5B, 0x59, 0xC3 };
 FILE *Log = NULL;
+int ASIcount = 0;
 
 void logprintf(const char *format, ...)
 {
@@ -79,7 +80,10 @@ void loadPlugins (const char *folder)
 				strcat_s (currfile, "\\");
 				strcat_s (currfile, fd.cFileName);
 				if (LoadLibrary(currfile))
+				{
 					logprintf("Plugin loaded: %s\n", currfile);
+					ASIcount++;
+				}
 				else
 					logprintf("Plugin error: %s\n", currfile);
 			}
@@ -280,8 +284,9 @@ DWORD WINAPI Start(LPVOID lpParam)
 			logprintf("Patch position 3 (certcheck): byte pattern not found\n");
 		}
 		SetExecutableFolder();
-		loadPlugins(".");
 		loadPlugins("asi");
+		if(!ASIcount)
+			loadPlugins(".");
 		if(Log)
 			fclose(Log);
 		return 0;
