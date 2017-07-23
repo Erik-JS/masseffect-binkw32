@@ -8,7 +8,4 @@ binkw23.dll => original binkw32.dll from Mass Effect 3.
 
 Release folder => latest compiled version, if you're here and don't know what to do, just copy the 2 DLL's there to 'Mass Effect 3\Binaries\Win32' and be done with it.
 
-MADE/COMPILED UNDER MICROSOFT VISUAL STUDIO EXPRESS 2015 UPDATE 3
-
-Please install VC2015 Redistributable:
-https://www.microsoft.com/en-us/download/details.aspx?id=48145
+BUILT UNDER MICROSOFT VISUAL STUDIO EXPRESS 2015 UPDATE 3.

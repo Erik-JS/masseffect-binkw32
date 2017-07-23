@@ -25,7 +25,7 @@ For testing purposes, the ASI loader will, alternatively, load plugins from *Bin
 
 -----------------------------------------------------------
 
-**REQUIRED:** [Visual C++ 2015 runtimes](https://www.microsoft.com/en-us/download/details.aspx?id=48145)
+**BUILT UNDER MICROSOFT VISUAL STUDIO EXPRESS 2015 UPDATE 3.**
 
 **DESIGNED FOR WINDOWS 7 OR LATER.**
 
